@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Administrator - Database Laporan Desa</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .table-tab-active {
+            background-color: #047857;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- NAVBAR ADMIN -->
+    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-500 text-slate-900 flex items-center justify-center font-black text-xl shadow-md">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <div>
+                    <span class="text-base font-extrabold tracking-tight block leading-tight">ADMINISTRATOR DESA</span>
+                    <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Manajemen Database SQLite</span>
+                </div>
+            </div>
+
+            <!-- Admin Profile & Logout -->
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex flex-col text-right">
+                    <span class="text-xs font-bold text-white">{{ session.get('username') }}</span>
+                    <span class="text-[11px] text-slate-400">admin@desaku.id</span>
+                </div>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-400/40">
+                    <i class="fa-solid fa-shield-halved text-[10px]"></i> Role: ADMIN
+                </span>
+                <a href="/logout" class="p-2 text-rose-400 hover:bg-rose-500/20 rounded-xl border border-rose-500/40 text-xs font-semibold transition-all flex items-center gap-1.5 ml-2">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                    <span class="hidden sm:inline">Logout</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+
+        <!-- Flash Message -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="space-y-2">
+                    {% for category, message in messages %}
+                        <div class="p-4 rounded-2xl flex items-center gap-3 shadow-sm
+                            {% if category == 'success' %} bg-emerald-100 text-emerald-800 border border-emerald-300
+                            {% elif category == 'danger' %} bg-rose-100 text-rose-800 border border-rose-300
+                            {% else %} bg-amber-100 text-amber-800 border border-amber-300 {% endif %}">
+                            <i class="fa-solid fa-circle-check text-lg"></i>
+                            <span class="text-sm font-medium">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- DASHBOARD HEADER & STATISTIK DATABASE -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    <i class="fa-solid fa-server text-emerald-600"></i>
+                    Beranda Admin - Tampilan Database
+                </h1>
+                <p class="text-sm text-slate-500 mt-1">
+                    Berikut adalah data riil yang tersimpan dalam basis data <code class="px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 font-mono text-xs">laporan_desa.db (SQLite)</code>.
+                </p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Koneksi SQLite Aktif
+                </span>
+            </div>
+        </div>
+
+        <!-- STAT CARDS -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Akun</span>
+                    <i class="fa-solid fa-users text-slate-400"></i>
+                </div>
+                <div class="text-2xl font-black text-slate-800 mt-2">{{ total_users }}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Tabel: <code class="font-mono">users</code></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Akun Warga (User)</span>
+                    <i class="fa-solid fa-user-check text-emerald-600"></i>
+                </div>
+                <div class="text-2xl font-black text-slate-800 mt-2">{{ total_warga }}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Role: <code class="font-mono">user</code></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Administrator</span>
+                    <i class="fa-solid fa-user-shield text-purple-600"></i>
+                </div>
+                <div class="text-2xl font-black text-slate-800 mt-2">{{ total_admins }}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Role: <code class="font-mono">admin</code></div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Total Aduan Masuk</span>
+                    <i class="fa-solid fa-clipboard-list text-amber-600"></i>
+                </div>
+                <div class="text-2xl font-black text-slate-800 mt-2">{{ total_reports }}</div>
+                <div class="text-[11px] text-slate-500 mt-0.5">Tabel: <code class="font-mono">reports</code></div>
+            </div>
+        </div>
+
+        <!-- MAIN DATABASE VIEWER -->
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <!-- Tabs Bar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between p-4 sm:p-6 border-b border-slate-200 bg-slate-50/70 gap-4">
+                <div class="flex items-center gap-2">
+                    <button id="tabBtnUsers" onclick="showTab('users')" 
+                        class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center gap-2 table-tab-active shadow-sm">
+                        <i class="fa-solid fa-users"></i>
+                        <span>1. Database Pengguna (Users)</span>
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-white/20">{{ users|length }}</span>
+                    </button>
+                    <button id="tabBtnReports" onclick="showTab('reports')" 
+                        class="px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-slate-600 hover:text-slate-900 transition-all flex items-center gap-2">
+                        <i class="fa-solid fa-file-lines"></i>
+                        <span>2. Database Laporan Warga</span>
+                        <span class="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700">{{ reports|length }}</span>
+                    </button>
+                </div>
+
+                <!-- Search Input -->
+                <div class="relative w-full sm:w-64">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input type="text" id="dbSearchInput" onkeyup="filterTable()" placeholder="Cari dalam database..."
+                        class="w-full pl-9 pr-4 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                </div>
+            </div>
+
+            <!-- SECTION 1: TABEL DATABASE USERS -->
+            <div id="sectionUsers" class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span>
+                            Tabel SQLite: <code class="font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">users</code>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Daftar pengguna yang telah mendaftar dan berhasil login ke sistem.</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                    <table class="w-full text-left text-xs" id="tableUsers">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">ID</th>
+                                <th class="py-3 px-4">Username</th>
+                                <th class="py-3 px-4">Email</th>
+                                <th class="py-3 px-4">Role Akses</th>
+                                <th class="py-3 px-4">Terdaftar Pada</th>
+                                <th class="py-3 px-4">Terakhir Login (Status)</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white">
+                            {% for u in users %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-4 font-mono font-bold text-slate-500">#{{ u['id'] }}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-7 h-7 rounded-lg {% if u['role'] == 'admin' %}bg-purple-100 text-purple-700{% else %}bg-emerald-100 text-emerald-700{% endif %} flex items-center justify-center font-bold">
+                                                {{ u['username'][0]|upper }}
+                                            </div>
+                                            <span class="font-semibold text-slate-800">{{ u['username'] }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-600 font-mono">{{ u['email'] }}</td>
+                                    <td class="py-3 px-4">
+                                        {% if u['role'] == 'admin' %}
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-purple-100 text-purple-700 border border-purple-300">
+                                                <i class="fa-solid fa-crown text-[9px]"></i> ADMIN
+                                            </span>
+                                        {% else %}
+                                            <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-300">
+                                                <i class="fa-solid fa-user text-[9px]"></i> USER (WARGA)
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-500">
+                                        {{ u['created_at'][:19] if u['created_at'] else '-' }}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        {% if u['last_login'] %}
+                                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 font-medium">
+                                                <i class="fa-solid fa-circle text-[6px] text-emerald-500"></i>
+                                                {{ u['last_login'][:19] }}
+                                            </span>
+                                        {% else %}
+                                            <span class="text-slate-400 italic">Belum pernah login</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SECTION 2: TABEL DATABASE REPORTS -->
+            <div id="sectionReports" class="p-6 hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-sm font-extrabold text-slate-800 flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-teal-500 inline-block"></span>
+                            Tabel SQLite: <code class="font-mono text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">reports</code>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Daftar aspirasi dan aduan yang dikirimkan warga desa.</p>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                    <table class="w-full text-left text-xs" id="tableReports">
+                        <thead class="bg-slate-100 text-slate-700 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200">
+                            <tr>
+                                <th class="py-3 px-4">ID</th>
+                                <th class="py-3 px-4">Pelapor (User)</th>
+                                <th class="py-3 px-4">Judul Laporan</th>
+                                <th class="py-3 px-4">Kategori & Lokasi</th>
+                                <th class="py-3 px-4">Isi Pengaduan</th>
+                                <th class="py-3 px-4">Status & Aksi Admin</th>
+                                <th class="py-3 px-4">Waktu Lapor</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100 bg-white">
+                            {% for r in reports %}
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td class="py-3 px-4 font-mono font-bold text-slate-500">#{{ r['id'] }}</td>
+                                    <td class="py-3 px-4">
+                                        <div class="font-bold text-slate-800">{{ r['username'] or 'Warga' }}</div>
+                                        <div class="text-[10px] text-slate-400 font-mono">{{ r['email'] or '-' }}</div>
+                                    </td>
+                                    <td class="py-3 px-4 font-semibold text-slate-900 max-w-[180px]">
+                                        {{ r['judul'] }}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold text-[10px] block w-fit mb-1">
+                                            {{ r['kategori'] }}
+                                        </span>
+                                        <span class="text-[10px] text-slate-500 flex items-center gap-1">
+                                            <i class="fa-solid fa-location-dot text-rose-500"></i> {{ r['lokasi'] }}
+                                        </span>
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-600 max-w-xs leading-relaxed">
+                                        {{ r['isi_laporan'] }}
+                                    </td>
+                                    <td class="py-3 px-4">
+                                        <form action="/admin/laporan/update_status" method="POST" class="flex items-center gap-1.5">
+                                            <input type="hidden" name="report_id" value="{{ r['id'] }}">
+                                            <select name="status" onchange="this.form.submit()" 
+                                                class="px-2 py-1 text-xs font-bold rounded-lg border 
+                                                {% if r['status'] == 'Selesai' %} bg-emerald-50 text-emerald-800 border-emerald-300
+                                                {% elif r['status'] == 'Diproses' %} bg-amber-50 text-amber-800 border-amber-300
+                                                {% else %} bg-slate-100 text-slate-800 border-slate-300 {% endif %}">
+                                                <option value="Menunggu Verifikasi" {% if r['status'] == 'Menunggu Verifikasi' %}selected{% endif %}>Menunggu</option>
+                                                <option value="Diproses" {% if r['status'] == 'Diproses' %}selected{% endif %}>Diproses</option>
+                                                <option value="Selesai" {% if r['status'] == 'Selesai' %}selected{% endif %}>Selesai</option>
+                                            </select>
+                                        </form>
+                                    </td>
+                                    <td class="py-3 px-4 text-slate-400 whitespace-nowrap">
+                                        {{ r['created_at'][:16] }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 py-6 mt-12 text-center text-xs text-slate-400">
+        <p>&copy; 2026 Administrator Sistem Laporan Desa. Terhubung dengan Database SQLite lokal.</p>
+    </footer>
+
+    <script>
+        let currentTab = 'users';
+
+        function showTab(tab) {
+            currentTab = tab;
+            const sectionUsers = document.getElementById('sectionUsers');
+            const sectionReports = document.getElementById('sectionReports');
+            const tabBtnUsers = document.getElementById('tabBtnUsers');
+            const tabBtnReports = document.getElementById('tabBtnReports');
+
+            if (tab === 'users') {
+                sectionUsers.classList.remove('hidden');
+                sectionReports.classList.add('hidden');
+                tabBtnUsers.classList.add('table-tab-active', 'shadow-sm');
+                tabBtnUsers.classList.remove('text-slate-600');
+                tabBtnReports.classList.remove('table-tab-active', 'shadow-sm');
+                tabBtnReports.classList.add('text-slate-600');
+            } else {
+                sectionUsers.classList.add('hidden');
+                sectionReports.classList.remove('hidden');
+                tabBtnReports.classList.add('table-tab-active', 'shadow-sm');
+                tabBtnReports.classList.remove('text-slate-600');
+                tabBtnUsers.classList.remove('table-tab-active', 'shadow-sm');
+                tabBtnUsers.classList.add('text-slate-600');
+            }
+            filterTable();
+        }
+
+        function filterTable() {
+            const query = document.getElementById('dbSearchInput').value.toLowerCase();
+            const tableId = currentTab === 'users' ? 'tableUsers' : 'tableReports';
+            const table = document.getElementById(tableId);
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const text = rows[i].textContent.toLowerCase();
+                if (text.includes(query)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+    </script>
+</body>
+</html>
