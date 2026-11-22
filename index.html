@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Laporan Desa - Layanan Aspirasi Warga</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .tab-active {
+            border-bottom: 3px solid #10b981;
+            color: #059669;
+            font-weight: 700;
+        }
+        .admin-tab-active {
+            background-color: #047857;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- ========================================== -->
+    <!-- 1. VIEW: AUTH (LOGIN & REGISTER)           -->
+    <!-- ========================================== -->
+    <div id="viewAuth" class="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-slate-100 flex items-center justify-center p-4">
+        <div class="max-w-md w-full">
+            <!-- Brand Header -->
+            <div class="text-center mb-6">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200 mb-3">
+                    <i class="fa-solid fa-landmark text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-extrabold text-slate-800 tracking-tight">LAPORAN DESA</h1>
+                <p class="text-sm text-slate-500 mt-1">Sistem Layanan Aspirasi & Pengaduan Warga Desa</p>
+            </div>
+
+            <!-- Card -->
+            <div class="bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
+                <!-- Tabs Navigation -->
+                <div class="flex border-b border-slate-100 bg-slate-50/50">
+                    <button id="btnTabLogin" onclick="switchAuthTab('login')" 
+                        class="flex-1 py-4 text-center text-sm transition-all duration-200 flex items-center justify-center gap-2 tab-active">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                        <span>Masuk (Login)</span>
+                    </button>
+                    <button id="btnTabDaftar" onclick="switchAuthTab('daftar')" 
+                        class="flex-1 py-4 text-center text-sm transition-all duration-200 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Daftar Akun</span>
+                    </button>
+                </div>
+
+                <div class="p-6 sm:p-8">
+                    <!-- Form Login -->
+                    <div id="boxLogin" class="space-y-4">
+                        <div class="text-left mb-2">
+                            <h2 class="text-lg font-bold text-slate-800">Selamat Datang Warga & Petugas</h2>
+                            <p class="text-xs text-slate-400">Masukkan username dan password Anda untuk masuk.</p>
+                        </div>
+
+                        <!-- Quick Login Demo Buttons -->
+                        <div class="bg-emerald-50/80 border border-emerald-200/80 rounded-2xl p-3 text-xs">
+                            <p class="font-semibold text-emerald-900 mb-2 flex items-center gap-1.5">
+                                <i class="fa-solid fa-bolt text-emerald-600"></i> Akun Uji Coba Cepat:
+                            </p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <button type="button" onclick="fillQuickLogin('admin', 'admin123')"
+                                    class="py-1.5 px-2.5 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-medium hover:bg-emerald-100 transition text-left truncate">
+                                    👑 Masuk sbg <b>Admin</b>
+                                </button>
+                                <button type="button" onclick="fillQuickLogin('warga_budi', 'warga123')"
+                                    class="py-1.5 px-2.5 bg-white border border-emerald-300 rounded-lg text-emerald-800 font-medium hover:bg-emerald-100 transition text-left truncate">
+                                    👤 Masuk sbg <b>Warga</b>
+                                </button>
+                            </div>
+                        </div>
+
+                        <form id="formLogin" onsubmit="handleLogin(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Username</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                        <i class="fa-solid fa-user text-sm"></i>
+                                    </span>
+                                    <input type="text" id="loginUsername" required placeholder="Masukkan username"
+                                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Password</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                        <i class="fa-solid fa-lock text-sm"></i>
+                                    </span>
+                                    <input type="password" id="loginPassword" required placeholder="Masukkan password"
+                                        class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                                    <button type="button" onclick="togglePassVisibility('loginPassword', this)" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
+                                        <i class="fa-regular fa-eye text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" 
+                                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 text-sm mt-2">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                <span>Masuk Sekarang</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Form Daftar (Register) -->
+                    <div id="boxDaftar" class="space-y-4 hidden">
+                        <div class="text-left mb-2">
+                            <h2 class="text-lg font-bold text-slate-800">Registrasi Warga Baru</h2>
+                            <p class="text-xs text-slate-400">Buat akun warga desa untuk menyampaikan laporan aspirasi.</p>
+                        </div>
+
+                        <form id="formRegister" onsubmit="handleRegister(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Username</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                        <i class="fa-solid fa-user-tag text-sm"></i>
+                                    </span>
+                                    <input type="text" id="regUsername" required placeholder="Pilih username unik"
+                                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Email Aktif</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                        <i class="fa-solid fa-envelope text-sm"></i>
+                                    </span>
+                                    <input type="email" id="regEmail" required placeholder="nama@email.com"
+                                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-semibold uppercase tracking-wider text-slate-600 mb-1.5">Password</label>
+                                <div class="relative">
+                                    <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-slate-400 pointer-events-none">
+                                        <i class="fa-solid fa-lock text-sm"></i>
+                                    </span>
+                                    <input type="password" id="regPassword" required placeholder="Minimal 6 karakter" minlength="6"
+                                        class="w-full pl-10 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all">
+                                    <button type="button" onclick="togglePassVisibility('regPassword', this)" class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600">
+                                        <i class="fa-regular fa-eye text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button type="submit" 
+                                class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-lg shadow-emerald-200 transition-all flex items-center justify-center gap-2 text-sm mt-2">
+                                <i class="fa-solid fa-user-plus"></i>
+                                <span>Daftar Akun Warga</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer info -->
+            <p class="text-center text-xs text-slate-400 mt-6">
+                &copy; Portal Layanan Aspirasi & Pengaduan Desa • Versi Web Statis (GitHub Pages Ready)
+            </p>
+        </div>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- 2. VIEW: BERANDA WARGA (USER DASHBOARD)    -->
+    <!-- ========================================== -->
+    <div id="viewUser" class="hidden flex-col min-h-screen">
+        <!-- Navbar -->
+        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-md shadow-emerald-200">
+                        <i class="fa-solid fa-landmark text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="text-base font-extrabold text-slate-800 tracking-tight block leading-tight">LAPORAN DESA</span>
+                        <span class="text-[11px] font-semibold text-emerald-600 uppercase tracking-wider">Portal Aspirasi Warga</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span id="navUserUsername" class="text-xs font-bold text-slate-800"></span>
+                        <span id="navUserEmail" class="text-[11px] text-slate-400"></span>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <i class="fa-solid fa-user-check text-[10px]"></i> Role: Warga
+                    </span>
+                    <button onclick="handleLogout()" class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-200 text-xs font-semibold transition-all flex items-center gap-1.5 ml-2" title="Keluar">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span class="hidden sm:inline">Keluar</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-950 rounded-3xl p-6 sm:p-10 text-white shadow-xl">
+                <div class="relative z-10 max-w-2xl space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full text-xs font-semibold text-emerald-200">
+                        <i class="fa-solid fa-bullhorn text-xs"></i> Suara & Aspirasi Membangun Desa
+                    </div>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight">
+                        Halo, <span id="heroUsername" class="text-emerald-300"></span>!
+                    </h1>
+                    <p class="text-sm sm:text-base text-emerald-100 font-light leading-relaxed">
+                        Selamat datang di Beranda Warga. Anda dapat melaporkan kendala fasilitas umum, kebersihan, keamanan lingkungan, atau memberikan kritik & saran yang membangun secara langsung kepada aparat desa.
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <a href="#formLaporSection" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-900 font-bold text-xs sm:text-sm rounded-xl shadow-lg transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-plus-circle"></i> Buat Laporan Baru
+                        </a>
+                        <a href="#riwayatLaporSection" class="px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm rounded-xl backdrop-blur transition-all flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Lihat Riwayat Laporan
+                        </a>
+                    </div>
+                </div>
+                <div class="absolute right-4 -bottom-6 opacity-15 pointer-events-none hidden md:block">
+                    <i class="fa-solid fa-building-columns text-[14rem]"></i>
+                </div>
+            </div>
+
+            <!-- Statistik -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Aduan Desa</span>
+                        <h3 id="statUserTotal" class="text-2xl font-black text-slate-800 mt-1">0 Laporan</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Seluruh laporan dari seluruh warga</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-500">Sedang Diproses</span>
+                        <h3 id="statUserProses" class="text-2xl font-black text-slate-800 mt-1">0 Laporan</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Petugas sedang menindaklanjuti</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-arrows-spin"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-sm flex items-center justify-between">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-600">Laporan Selesai</span>
+                        <h3 id="statUserSelesai" class="text-2xl font-black text-slate-800 mt-1">0 Selesai</h3>
+                        <p class="text-[11px] text-slate-500 mt-0.5">Berhasil diselesaikan & diperbaiki</p>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid: Formulir & Riwayat -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <!-- FORM INPUT LAPORAN (KIRI) -->
+                <div id="formLaporSection" class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm">
+                    <div class="flex items-center gap-2 mb-4 pb-3 border-b border-slate-100">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center text-sm font-bold">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800">Sampaikan Laporan Desa</h2>
+                            <p class="text-xs text-slate-400">Data tersimpan di penyimpanan browser Anda</p>
+                        </div>
+                    </div>
+
+                    <form onsubmit="handleCreateReport(event)" class="space-y-4 text-xs sm:text-sm">
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Judul Laporan</label>
+                            <input type="text" id="reportJudul" required placeholder="Contoh: Lampu jalan mati di gang Melati"
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Kategori</label>
+                                <select id="reportKategori" required class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                    <option value="Infrastruktur & Jalan">Infrastruktur & Jalan</option>
+                                    <option value="Fasilitas Umum">Fasilitas Umum</option>
+                                    <option value="Kebersihan & Sampah">Kebersihan & Sampah</option>
+                                    <option value="Keamanan Lingkungan">Keamanan Lingkungan</option>
+                                    <option value="Pelayanan Aparat">Pelayanan Aparat</option>
+                                    <option value="Kritik & Saran">Kritik & Saran</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block font-semibold text-slate-700 mb-1">Lokasi Kejadian</label>
+                                <input type="text" id="reportLokasi" required placeholder="Contoh: RT 02 / RW 05"
+                                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block font-semibold text-slate-700 mb-1">Detail Aduan / Aspirasi</label>
+                            <textarea id="reportDetail" rows="4" required placeholder="Ceritakan secara detail keluhan atau usulan Anda..."
+                                class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-200 transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Kirim Laporan Sekarang</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- RIWAYAT LAPORAN SAYA (KANAN) -->
+                <div id="riwayatLaporSection" class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm flex flex-col">
+                    <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center text-sm">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-800">Riwayat Laporan Saya</h2>
+                                <p class="text-xs text-slate-400">Pantau status penanganan aduan yang telah Anda kirimkan</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- List Container -->
+                    <div id="userReportList" class="space-y-3 overflow-y-auto max-h-[520px] pr-1 flex-grow">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <!-- ========================================== -->
+    <!-- 3. VIEW: PANEL ADMIN (DATABASE VIEWER)     -->
+    <!-- ========================================== -->
+    <div id="viewAdmin" class="hidden flex-col min-h-screen bg-slate-100">
+        <!-- Admin Navbar -->
+        <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500 text-slate-900 flex items-center justify-center font-black text-xl shadow-md">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <div>
+                        <span class="text-base font-extrabold tracking-tight block leading-tight">ADMINISTRATOR DESA</span>
+                        <span class="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Manajemen Database Laporan Desa</span>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <div class="hidden sm:flex flex-col text-right">
+                        <span id="navAdminUsername" class="text-xs font-bold text-white"></span>
+                        <span class="text-[11px] text-slate-400">admin@desaku.id</span>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-400/40">
+                        <i class="fa-solid fa-shield-halved text-[10px]"></i> Role: ADMIN
+                    </span>
+                    <button onclick="handleLogout()" class="p-2 text-rose-400 hover:bg-rose-500/20 rounded-xl border border-rose-500/40 text-xs font-semibold transition-all flex items-center gap-1.5 ml-2">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span class="hidden sm:inline">Logout</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Admin Content -->
+        <main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+            <!-- Header Card -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div>
+                    <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <i class="fa-solid fa-server text-emerald-600"></i>
+                        Beranda Admin - Tampilan Database
+                    </h1>
+                    <p class="text-sm text-slate-500 mt-1">
+                        Berikut adalah visualisasi tabel pengguna dan aduan warga desa yang dapat Anda kelola secara langsung.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="resetDefaultData()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl border border-slate-300 transition flex items-center gap-1.5" title="Kembalikan data ke awal">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Data Awal
+                    </button>
+                    <span class="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-xl">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Data Aktif
+                    </span>
+                </div>
+            </div>
+
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Akun</span>
+                        <i class="fa-solid fa-users text-slate-400"></i>
+                    </div>
+                    <div id="adminStatTotalUsers" class="text-2xl font-black text-slate-800 mt-2">0</div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">Tabel: <code class="font-mono">users</code></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Akun Warga (User)</span>
+                        <i class="fa-solid fa-user-check text-emerald-600"></i>
+                    </div>
+                    <div id="adminStatTotalWarga" class="text-2xl font-black text-slate-800 mt-2">0</div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">Role: <code class="font-mono">user</code></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-purple-600 uppercase tracking-wider">Administrator</span>
+                        <i class="fa-solid fa-user-shield text-purple-600"></i>
+                    </div>
+                    <div id="adminStatTotalAdmin" class="text-2xl font-black text-slate-800 mt-2">0</div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">Role: <code class="font-mono">admin</code></div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Total Aduan Masuk</span>
+                        <i class="fa-solid fa-clipboard-list text-amber-600"></i>
+                    </div>
+                    <div id="adminStatTotalReports" class="text-2xl font-black text-slate-800 mt-2">0</div>
+                    <div class="text-[11px] text-slate-500 mt-0.5">Tabel: <code class="font-mono">reports</code></div>
+                </div>
+            </div>
+
+            <!-- Database Viewer Tabs -->
+            <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="flex border-b border-slate-200 bg-slate-50">
+                    <button id="btnAdminTabUsers" onclick="switchAdminTab('users')"
+                        class="px-6 py-4 text-sm font-bold flex items-center gap-2 transition admin-tab-active">
+                        <i class="fa-solid fa-users"></i>
+                        <span>Tabel 1: Pengguna (users)</span>
+                    </button>
+                    <button id="btnAdminTabReports" onclick="switchAdminTab('reports')"
+                        class="px-6 py-4 text-sm font-bold flex items-center gap-2 transition text-slate-600 hover:text-slate-900">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <span>Tabel 2: Laporan Warga (reports)</span>
+                    </button>
+                </div>
+
+                <!-- TAB 1: USERS -->
+                <div id="adminBoxUsers" class="p-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Daftar Pengguna Terdaftar</h3>
+                            <p class="text-xs text-slate-400">Data akun administrator dan warga yang tersimpan di sistem</p>
+                        </div>
+                        <input type="text" id="searchUserInput" oninput="renderAdminUsersTable()" placeholder="Cari username atau email..."
+                            class="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-xs">
+                    </div>
+
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3.5">ID</th>
+                                    <th class="px-4 py-3.5">Username</th>
+                                    <th class="px-4 py-3.5">Email</th>
+                                    <th class="px-4 py-3.5">Role</th>
+                                    <th class="px-4 py-3.5">Waktu Terdaftar</th>
+                                    <th class="px-4 py-3.5">Terakhir Login</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableUsersBody" class="divide-y divide-slate-100 bg-white">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- TAB 2: REPORTS -->
+                <div id="adminBoxReports" class="p-6 hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-800">Daftar Aspirasi & Pengaduan Warga</h3>
+                            <p class="text-xs text-slate-400">Ubah status laporan langsung pada kolom aksi di bawah</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <select id="filterStatusReport" onchange="renderAdminReportsTable()" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                                <option value="Semua">Semua Status</option>
+                                <option value="Menunggu Verifikasi">Menunggu Verifikasi</option>
+                                <option value="Sedang Diproses">Sedang Diproses</option>
+                                <option value="Selesai">Selesai</option>
+                            </select>
+                            <input type="text" id="searchReportInput" oninput="renderAdminReportsTable()" placeholder="Cari judul / pelapor..."
+                                class="px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 max-w-xs">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table class="w-full text-left text-xs sm:text-sm text-slate-600">
+                            <thead class="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] tracking-wider border-b border-slate-200">
+                                <tr>
+                                    <th class="px-4 py-3.5">ID</th>
+                                    <th class="px-4 py-3.5">Pelapor</th>
+                                    <th class="px-4 py-3.5">Judul & Kategori</th>
+                                    <th class="px-4 py-3.5">Lokasi & Detail</th>
+                                    <th class="px-4 py-3.5">Tanggal</th>
+                                    <th class="px-4 py-3.5">Ubah Status</th>
+                                    <th class="px-4 py-3.5 text-center">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableReportsBody" class="divide-y divide-slate-100 bg-white">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- JAVASCRIPT: LOGIKA APLIKASI (LOCALSTORAGE) -->
+    <!-- ========================================== -->
+    <script>
+        // Data Awal Bawaan
+        const INITIAL_USERS = [
+            {
+                id: 1,
+                username: "admin",
+                email: "admin@desaku.id",
+                password: "admin123",
+                role: "admin",
+                created_at: "2026-11-01 08:00:00",
+                last_login: "2026-11-22 15:45:10"
+            },
+            {
+                id: 2,
+                username: "warga_budi",
+                email: "budi@gmail.com",
+                password: "warga123",
+                role: "user",
+                created_at: "2026-11-10 10:15:00",
+                last_login: "2026-11-22 14:20:00"
+            },
+            {
+                id: 3,
+                username: "siti_rahma",
+                email: "siti@gmail.com",
+                password: "warga123",
+                role: "user",
+                created_at: "2026-11-12 11:30:00",
+                last_login: "2026-11-21 09:12:00"
+            }
+        ];
+
+        const INITIAL_REPORTS = [
+            {
+                id: 1,
+                username: "warga_budi",
+                judul: "Jalan Rusak & Berlubang di RT 03",
+                kategori: "Infrastruktur & Jalan",
+                lokasi: "Jl. Melati RT 03 / RW 01",
+                detail: "Aspal jalan berlubang cukup dalam sekitar 1 meter, membahayakan pengendara motor terutama saat malam hari dan hujan deras.",
+                status: "Sedang Diproses",
+                created_at: "2026-11-20 14:10"
+            },
+            {
+                id: 2,
+                username: "siti_rahma",
+                judul: "Lampu Penerangan Jalan Umum Padam",
+                kategori: "Fasilitas Umum",
+                lokasi: "Dekat Lapangan Voli RW 02",
+                detail: "Lampu PJU sudah mati selama 3 hari berturut-turut, area jalan menjadi gelap gulita saat malam.",
+                status: "Menunggu Verifikasi",
+                created_at: "2026-11-21 19:35"
+            },
+            {
+                id: 3,
+                username: "warga_budi",
+                judul: "Sampah Menumpuk di Saluran Air",
+                kategori: "Kebersihan & Sampah",
+                lokasi: "Saluran Irigasi Blok Barat",
+                detail: "Tumpukan sampah plastik menyumbat aliran drainase sehingga air mulai meluap ke bahu jalan.",
+                status: "Selesai",
+                created_at: "2026-11-19 09:20"
+            }
+        ];
+
+        // Inisialisasi Database LocalStorage
+        function initStorage() {
+            if (!localStorage.getItem('desa_users')) {
+                localStorage.setItem('desa_users', JSON.stringify(INITIAL_USERS));
+            }
+            if (!localStorage.getItem('desa_reports')) {
+                localStorage.setItem('desa_reports', JSON.stringify(INITIAL_REPORTS));
+            }
+        }
+
+        function getUsers() {
+            return JSON.parse(localStorage.getItem('desa_users') || '[]');
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('desa_users', JSON.stringify(users));
+        }
+
+        function getReports() {
+            return JSON.parse(localStorage.getItem('desa_reports') || '[]');
+        }
+
+        function saveReports(reports) {
+            localStorage.setItem('desa_reports', JSON.stringify(reports));
+        }
+
+        function getCurrentUser() {
+            return JSON.parse(sessionStorage.getItem('desa_active_user') || 'null');
+        }
+
+        function setCurrentUser(user) {
+            if (user) {
+                sessionStorage.setItem('desa_active_user', JSON.stringify(user));
+            } else {
+                sessionStorage.removeItem('desa_active_user');
+            }
+        }
+
+        // Tampilkan Notifikasi Toast
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-emerald-500 text-white';
+            let icon = 'fa-circle-check';
+            if (type === 'error') {
+                bg = 'bg-rose-500 text-white';
+                icon = 'fa-triangle-exclamation';
+            } else if (type === 'info') {
+                bg = 'bg-sky-500 text-white';
+                icon = 'fa-circle-info';
+            }
+
+            toast.className = `p-4 rounded-2xl shadow-xl flex items-center gap-3 text-xs sm:text-sm font-semibold pointer-events-auto transform transition-all duration-300 translate-y-2 opacity-0 ${bg}`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 50);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
+        // Toggle Password Input Visibility
+        function togglePassVisibility(id, btn) {
+            const input = document.getElementById(id);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fa-regular fa-eye-slash text-sm';
+            } else {
+                input.type = 'password';
+                icon.className = 'fa-regular fa-eye text-sm';
+            }
+        }
+
+        // Tab Switcher Auth (Login / Register)
+        function switchAuthTab(tab) {
+            const btnLogin = document.getElementById('btnTabLogin');
+            const btnDaftar = document.getElementById('btnTabDaftar');
+            const boxLogin = document.getElementById('boxLogin');
+            const boxDaftar = document.getElementById('boxDaftar');
+
+            if (tab === 'login') {
+                btnLogin.className = "flex-1 py-4 text-center text-sm transition-all duration-200 flex items-center justify-center gap-2 tab-active";
+                btnDaftar.className = "flex-1 py-4 text-center text-sm transition-all duration-200 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800";
+                boxLogin.classList.remove('hidden');
+                boxDaftar.classList.add('hidden');
+            } else {
+                btnDaftar.className = "flex-1 py-4 text-center text-sm transition-all duration-200 flex items-center justify-center gap-2 tab-active";
+                btnLogin.className = "flex-1 py-4 text-center text-sm transition-all duration-200 flex items-center justify-center gap-2 text-slate-500 hover:text-slate-800";
+                boxDaftar.classList.remove('hidden');
+                boxLogin.classList.add('hidden');
+            }
+        }
+
+        // Quick fill login demo
+        function fillQuickLogin(username, password) {
+            document.getElementById('loginUsername').value = username;
+            document.getElementById('loginPassword').value = password;
+            showToast(`Mengisi data akun: ${username}`, 'info');
+        }
+
+        // Handle Login
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value.trim();
+
+            const users = getUsers();
+            const foundUser = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
+
+            if (foundUser) {
+                // Update last login
+                const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+                foundUser.last_login = nowStr;
+                saveUsers(users);
+
+                setCurrentUser(foundUser);
+                showToast(`Selamat datang kembali, ${foundUser.username}!`, 'success');
+                renderApp();
+            } else {
+                showToast('Username atau password salah! Periksa kembali.', 'error');
+            }
+        }
+
+        // Handle Register
+        function handleRegister(e) {
+            e.preventDefault();
+            const username = document.getElementById('regUsername').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            const users = getUsers();
+            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                showToast('Username tersebut sudah digunakan oleh warga lain!', 'error');
+                return;
+            }
+
+            const nowStr = new Date().toISOString().replace('T', ' ').substring(0, 19);
+            const newUser = {
+                id: users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1,
+                username: username,
+                email: email,
+                password: password,
+                role: 'user',
+                created_at: nowStr,
+                last_login: nowStr
+            };
+
+            users.push(newUser);
+            saveUsers(users);
+
+            showToast('Akun warga berhasil dibuat! Silakan masuk.', 'success');
+            document.getElementById('formRegister').reset();
+            switchAuthTab('login');
+            fillQuickLogin(username, password);
+        }
+
+        // Handle Logout
+        function handleLogout() {
+            setCurrentUser(null);
+            showToast('Anda telah berhasil keluar.', 'info');
+            renderApp();
+        }
+
+        // Handle Create Report (User)
+        function handleCreateReport(e) {
+            e.preventDefault();
+            const user = getCurrentUser();
+            if (!user) return;
+
+            const judul = document.getElementById('reportJudul').value.trim();
+            const kategori = document.getElementById('reportKategori').value;
+            const lokasi = document.getElementById('reportLokasi').value.trim();
+            const detail = document.getElementById('reportDetail').value.trim();
+
+            const reports = getReports();
+            const now = new Date();
+            const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0') + ' ' + String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+
+            const newReport = {
+                id: reports.length > 0 ? Math.max(...reports.map(r => r.id)) + 1 : 1,
+                username: user.username,
+                judul: judul,
+                kategori: kategori,
+                lokasi: lokasi,
+                detail: detail,
+                status: 'Menunggu Verifikasi',
+                created_at: dateStr
+            };
+
+            reports.unshift(newReport);
+            saveReports(reports);
+
+            showToast('Laporan Anda berhasil dikirim dan tersimpan!', 'success');
+            document.getElementById('reportJudul').value = '';
+            document.getElementById('reportLokasi').value = '';
+            document.getElementById('reportDetail').value = '';
+
+            renderUserDashboard();
+        }
+
+        // Update Report Status (Admin)
+        function updateReportStatus(id, newStatus) {
+            const reports = getReports();
+            const report = reports.find(r => r.id === id);
+            if (report) {
+                report.status = newStatus;
+                saveReports(reports);
+                showToast(`Status laporan #${id} diubah ke: ${newStatus}`, 'success');
+                renderAdminDashboard();
+            }
+        }
+
+        // Delete Report (Admin)
+        function deleteReport(id) {
+            if (confirm(`Yakin ingin menghapus laporan #${id}?`)) {
+                let reports = getReports();
+                reports = reports.filter(r => r.id !== id);
+                saveReports(reports);
+                showToast(`Laporan #${id} berhasil dihapus.`, 'info');
+                renderAdminDashboard();
+            }
+        }
+
+        // Reset Data to Default
+        function resetDefaultData() {
+            if (confirm("Kembalikan data pengguna dan laporan ke data bawaan awal?")) {
+                localStorage.setItem('desa_users', JSON.stringify(INITIAL_USERS));
+                localStorage.setItem('desa_reports', JSON.stringify(INITIAL_REPORTS));
+                showToast("Data berhasil direset ke bawaan!", "success");
+                renderApp();
+            }
+        }
+
+        // Switch Admin Tabs
+        function switchAdminTab(tab) {
+            const btnUsers = document.getElementById('btnAdminTabUsers');
+            const btnReports = document.getElementById('btnAdminTabReports');
+            const boxUsers = document.getElementById('adminBoxUsers');
+            const boxReports = document.getElementById('adminBoxReports');
+
+            if (tab === 'users') {
+                btnUsers.className = "px-6 py-4 text-sm font-bold flex items-center gap-2 transition admin-tab-active";
+                btnReports.className = "px-6 py-4 text-sm font-bold flex items-center gap-2 transition text-slate-600 hover:text-slate-900";
+                boxUsers.classList.remove('hidden');
+                boxReports.classList.add('hidden');
+            } else {
+                btnReports.className = "px-6 py-4 text-sm font-bold flex items-center gap-2 transition admin-tab-active";
+                btnUsers.className = "px-6 py-4 text-sm font-bold flex items-center gap-2 transition text-slate-600 hover:text-slate-900";
+                boxReports.classList.remove('hidden');
+                boxUsers.classList.add('hidden');
+            }
+        }
+
+        // Status Badge Helper
+        function getStatusBadge(status) {
+            if (status === 'Selesai') {
+                return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200"><i class="fa-solid fa-circle-check"></i> Selesai</span>`;
+            } else if (status === 'Sedang Diproses') {
+                return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-800 border border-amber-200"><i class="fa-solid fa-arrows-spin"></i> Sedang Diproses</span>`;
+            } else {
+                return `<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200"><i class="fa-regular fa-clock"></i> Menunggu Verifikasi</span>`;
+            }
+        }
+
+        // Render User Dashboard
+        function renderUserDashboard() {
+            const user = getCurrentUser();
+            if (!user) return;
+
+            document.getElementById('navUserUsername').textContent = user.username;
+            document.getElementById('navUserEmail').textContent = user.email || (user.username + '@warga.id');
+            document.getElementById('heroUsername').textContent = user.username;
+
+            const reports = getReports();
+            const myReports = reports.filter(r => r.username.toLowerCase() === user.username.toLowerCase());
+
+            // Stats
+            document.getElementById('statUserTotal').textContent = `${reports.length} Laporan`;
+            document.getElementById('statUserProses').textContent = `${reports.filter(r => r.status === 'Sedang Diproses').length} Laporan`;
+            document.getElementById('statUserSelesai').textContent = `${reports.filter(r => r.status === 'Selesai').length} Selesai`;
+
+            // List Riwayat
+            const listContainer = document.getElementById('userReportList');
+            if (myReports.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-12 text-slate-400">
+                        <i class="fa-regular fa-folder-open text-4xl mb-2 text-slate-300"></i>
+                        <p class="text-xs">Belum ada aduan yang Anda kirimkan.</p>
+                        <p class="text-[11px] text-slate-400 mt-0.5">Gunakan formulir di samping untuk membuat laporan pertama.</p>
+                    </div>
+                `;
+            } else {
+                listContainer.innerHTML = myReports.map(item => `
+                    <div class="p-4 rounded-2xl border border-slate-200 hover:border-emerald-300 bg-white transition space-y-2 shadow-sm">
+                        <div class="flex items-start justify-between gap-3">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">${item.kategori}</span>
+                                <h4 class="font-bold text-slate-800 text-sm mt-1">${item.judul}</h4>
+                            </div>
+                            <div>${getStatusBadge(item.status)}</div>
+                        </div>
+                        <p class="text-xs text-slate-600 line-clamp-2">${item.detail}</p>
+                        <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+                            <span><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${item.lokasi}</span>
+                            <span><i class="fa-regular fa-calendar text-slate-400 mr-1"></i>${item.created_at}</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // Render Admin Tables
+        function renderAdminDashboard() {
+            const user = getCurrentUser();
+            if (!user) return;
+
+            document.getElementById('navAdminUsername').textContent = user.username;
+
+            const users = getUsers();
+            const reports = getReports();
+
+            // Stats
+            document.getElementById('adminStatTotalUsers').textContent = users.length;
+            document.getElementById('adminStatTotalWarga').textContent = users.filter(u => u.role === 'user').length;
+            document.getElementById('adminStatTotalAdmin').textContent = users.filter(u => u.role === 'admin').length;
+            document.getElementById('adminStatTotalReports').textContent = reports.length;
+
+            renderAdminUsersTable();
+            renderAdminReportsTable();
+        }
+
+        function renderAdminUsersTable() {
+            const query = (document.getElementById('searchUserInput')?.value || '').toLowerCase();
+            const users = getUsers().filter(u => 
+                u.username.toLowerCase().includes(query) || 
+                (u.email && u.email.toLowerCase().includes(query))
+            );
+
+            const tbody = document.getElementById('tableUsersBody');
+            tbody.innerHTML = users.map(u => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-4 py-3 font-mono font-bold text-slate-500">#${u.id}</td>
+                    <td class="px-4 py-3 font-bold text-slate-800">${u.username}</td>
+                    <td class="px-4 py-3 text-slate-500">${u.email || '-'}</td>
+                    <td class="px-4 py-3">
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${u.role === 'admin' ? 'bg-purple-100 text-purple-700 border border-purple-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}">
+                            ${u.role}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 text-slate-400 text-xs">${u.created_at || '-'}</td>
+                    <td class="px-4 py-3 text-slate-500 text-xs font-mono">${u.last_login || 'Belum pernah'}</td>
+                </tr>
+            `).join('');
+        }
+
+        function renderAdminReportsTable() {
+            const query = (document.getElementById('searchReportInput')?.value || '').toLowerCase();
+            const filterStatus = document.getElementById('filterStatusReport')?.value || 'Semua';
+
+            let reports = getReports();
+            if (filterStatus !== 'Semua') {
+                reports = reports.filter(r => r.status === filterStatus);
+            }
+            if (query) {
+                reports = reports.filter(r => 
+                    r.judul.toLowerCase().includes(query) || 
+                    r.username.toLowerCase().includes(query) ||
+                    r.kategori.toLowerCase().includes(query)
+                );
+            }
+
+            const tbody = document.getElementById('tableReportsBody');
+            if (reports.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-8 text-slate-400 text-xs">Tidak ada data laporan yang cocok.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = reports.map(r => `
+                <tr class="hover:bg-slate-50 transition">
+                    <td class="px-4 py-3 font-mono font-bold text-slate-500">#${r.id}</td>
+                    <td class="px-4 py-3 font-bold text-slate-800">
+                        <i class="fa-solid fa-user-circle text-slate-400 mr-1"></i>${r.username}
+                    </td>
+                    <td class="px-4 py-3">
+                        <div class="font-semibold text-slate-800">${r.judul}</div>
+                        <span class="inline-block text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded mt-0.5">${r.kategori}</span>
+                    </td>
+                    <td class="px-4 py-3 max-w-xs">
+                        <div class="text-xs text-slate-700 font-medium"><i class="fa-solid fa-location-dot text-slate-400 mr-1"></i>${r.lokasi}</div>
+                        <div class="text-[11px] text-slate-400 truncate mt-0.5">${r.detail}</div>
+                    </td>
+                    <td class="px-4 py-3 text-xs text-slate-400 whitespace-nowrap">${r.created_at}</td>
+                    <td class="px-4 py-3">
+                        <select onchange="updateReportStatus(${r.id}, this.value)" class="text-xs font-semibold py-1.5 px-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white">
+                            <option value="Menunggu Verifikasi" ${r.status === 'Menunggu Verifikasi' ? 'selected' : ''}>Menunggu Verifikasi</option>
+                            <option value="Sedang Diproses" ${r.status === 'Sedang Diproses' ? 'selected' : ''}>Sedang Diproses</option>
+                            <option value="Selesai" ${r.status === 'Selesai' ? 'selected' : ''}>Selesai</option>
+                        </select>
+                    </td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="deleteReport(${r.id})" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition" title="Hapus Laporan">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Master App View Router
+        function renderApp() {
+            const user = getCurrentUser();
+            const viewAuth = document.getElementById('viewAuth');
+            const viewUser = document.getElementById('viewUser');
+            const viewAdmin = document.getElementById('viewAdmin');
+
+            viewAuth.classList.add('hidden');
+            viewUser.classList.add('hidden');
+            viewAdmin.classList.add('hidden');
+
+            if (!user) {
+                viewAuth.classList.remove('hidden');
+            } else if (user.role === 'admin') {
+                viewAdmin.classList.remove('hidden');
+                renderAdminDashboard();
+            } else {
+                viewUser.classList.remove('hidden');
+                renderUserDashboard();
+            }
+        }
+
+        // Jalankan saat pertama dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            initStorage();
+            renderApp();
+        });
+    </script>
+</body>
+</html>
